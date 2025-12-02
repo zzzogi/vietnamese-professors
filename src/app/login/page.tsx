@@ -145,15 +145,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOAuthSignIn("behance")}
-              className="py-6"
-            >
-              <SiBehance className="w-5 h-5" />
-            </Button>
+          <div className="grid grid-cols-2 gap-3">
             <Button
               type="button"
               variant="outline"
