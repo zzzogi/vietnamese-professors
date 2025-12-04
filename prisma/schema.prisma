@@ -8,16 +8,19 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  name              String?
+  email             String              @unique
+  emailVerified     DateTime?
+  image             String?
+  password          String?
+  accounts          Account[]
+  sessions          Session[]
+  bookmarks         Bookmark[]
+  savedEmails       SavedEmail[]
+  professorRatings  ProfessorRating[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 }
 
 model Account {
@@ -57,22 +60,69 @@ model VerificationToken {
 }
 
 model Professor {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
   name              String
-  email             String   @unique
+  email             String              @unique
   university        String
   department        String
   major             String
   location          String
   bio               String?
   imageUrl          String?
-  researchInterests String[] // Array of research interests
-  googleScholarUrl  String?  // Google Scholar profile
-  publicationUrl    String?  // Personal publication page
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  researchInterests String[]
+  googleScholarUrl  String?
+  publicationUrl    String?
+  bookmarks         Bookmark[]
+  savedEmails       SavedEmail[]
+  ratings           ProfessorRating[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
   @@index([name])
   @@index([university])
   @@index([major])
+}
+
+model Bookmark {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  professorId String   @db.ObjectId
+  createdAt   DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  professor Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, professorId])
+  @@index([userId])
+}
+
+model SavedEmail {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  professorId String   @db.ObjectId
+  subject     String
+  content     String
+  language    String
+  createdAt   DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  professor Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model ProfessorRating {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  professorId String   @db.ObjectId
+  rating      Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  professor Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, professorId])
+  @@index([professorId])
 }

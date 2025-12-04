@@ -1,14 +1,20 @@
+"use client";
+
 import { Professor } from "@/hooks/use-professors";
 import { Card } from "@/components/ui/card";
 import { Mail, MapPin, Building2, GraduationCap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { RatingDisplay } from "./rating-display";
+import { useProfessorRating } from "@/hooks/use-rate-professor";
 
 interface ProfessorCardProps {
   professor: Professor;
 }
 
 export function ProfessorCard({ professor }: ProfessorCardProps) {
+  const { data: ratingData } = useProfessorRating(professor.id);
+
   return (
     <Link href={`/professors/${professor.id}`}>
       <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
@@ -35,6 +41,17 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
               {professor.name}
             </h3>
 
+            {/* Rating */}
+            {ratingData && ratingData.totalRatings > 0 && (
+              <div className="mt-1">
+                <RatingDisplay
+                  rating={ratingData.averageRating}
+                  totalRatings={ratingData.totalRatings}
+                  size="sm"
+                />
+              </div>
+            )}
+
             <div className="mt-2 space-y-1.5">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Building2 className="h-4 w-4 flex-shrink-0" />
@@ -49,11 +66,6 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <MapPin className="h-4 w-4 flex-shrink-0" />
                 <span className="truncate">{professor.location}</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Mail className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{professor.email}</span>
               </div>
             </div>
 
