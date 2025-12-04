@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -56,17 +57,20 @@ model VerificationToken {
 }
 
 model Professor {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  email       String   @unique
-  university  String
-  department  String
-  major       String
-  location    String
-  bio         String?
-  imageUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  email             String   @unique
+  university        String
+  department        String
+  major             String
+  location          String
+  bio               String?
+  imageUrl          String?
+  researchInterests String[] // Array of research interests
+  googleScholarUrl  String?  // Google Scholar profile
+  publicationUrl    String?  // Personal publication page
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@index([name])
   @@index([university])

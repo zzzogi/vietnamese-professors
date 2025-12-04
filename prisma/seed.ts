@@ -3,7 +3,6 @@ import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
 
-// Danh sách các trường đại học Việt Nam
 const universities = [
   "Đại học Quốc gia Hà Nội",
   "Đại học Quốc gia TP.HCM",
@@ -58,20 +57,45 @@ const locations = [
   "Vinh",
 ];
 
+const researchTopics = [
+  "Machine Learning",
+  "Artificial Intelligence",
+  "Data Science",
+  "Blockchain Technology",
+  "Internet of Things",
+  "Cybersecurity",
+  "Cloud Computing",
+  "Computer Vision",
+  "Natural Language Processing",
+  "Quantum Computing",
+  "Business Analytics",
+  "Financial Economics",
+  "Marketing Strategy",
+  "Supply Chain Management",
+  "Organizational Behavior",
+  "Corporate Finance",
+  "International Trade",
+  "Tourism Development",
+  "Sustainable Development",
+  "Environmental Science",
+];
+
 async function main() {
   console.log("🌱 Starting seed...");
 
-  // Xóa dữ liệu cũ (optional)
   await prisma.professor.deleteMany();
   console.log("🗑️  Cleared existing professors");
 
-  // Tạo 50 giáo sư giả
   const professors = [];
 
   for (let i = 0; i < 50; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const name = `${lastName} ${firstName}`;
+
+    // Random 2-4 research interests
+    const numInterests = faker.number.int({ min: 2, max: 4 });
+    const interests = faker.helpers.arrayElements(researchTopics, numInterests);
 
     professors.push({
       name,
@@ -82,10 +106,16 @@ async function main() {
       location: faker.helpers.arrayElement(locations),
       bio: faker.lorem.paragraph(),
       imageUrl: faker.image.avatar(),
+      researchInterests: interests,
+      googleScholarUrl: faker.datatype.boolean()
+        ? `https://scholar.google.com/citations?user=${faker.string.alphanumeric(
+            12
+          )}`
+        : null,
+      publicationUrl: faker.datatype.boolean() ? faker.internet.url() : null,
     });
   }
 
-  // Insert vào database
   const result = await prisma.professor.createMany({
     data: professors,
   });
