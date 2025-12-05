@@ -1,8 +1,8 @@
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Professor } from "@prisma/client";
 import { Lock } from "lucide-react";
 import Link from "next/link";
-import { Professor } from "@prisma/client";
 
 interface ProfessorCardLockedProps {
   professor: Partial<Professor>;
@@ -10,7 +10,6 @@ interface ProfessorCardLockedProps {
 }
 
 export function ProfessorCardLocked({
-  professor,
   reason = "guest",
 }: ProfessorCardLockedProps) {
   const message =

@@ -10,12 +10,12 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { emailNotifications, marketingEmails } = body;
+    await request.json();
+    // const { emailNotifications, marketingEmails } = body;
 
     // Store notification preferences
     // You'll need to add these fields to your User schema
-    const user = await prisma.user.update({
+    await prisma.user.update({
       where: { email: session.user.email },
       data: {
         // emailNotifications,

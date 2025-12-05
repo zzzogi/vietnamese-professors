@@ -1,20 +1,12 @@
-import { Professor } from "@prisma/client";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  MapPin,
-  Building2,
-  Mail,
-  Star,
-  Bookmark,
-  Crown,
-  Lock,
-} from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { useUserRole } from "@/hooks/use-user-role";
+import { UserRole } from "@/lib/constants/roles";
+import { Professor } from "@prisma/client";
+import { Bookmark, Building2, Crown, MapPin, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { UserRole } from "@/lib/constants/roles";
-import { useUserRole } from "@/hooks/use-user-role";
 
 interface ProfessorCardProps {
   professor: Professor & {

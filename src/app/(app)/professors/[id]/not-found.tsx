@@ -11,7 +11,8 @@ export default function NotFound() {
           Professor Not Found
         </h1>
         <p className="text-gray-600 mb-8">
-          The professor you're looking for doesn't exist or has been removed.
+          The professor you&apos;re looking for doesn&apos;t exist or has been
+          removed.
         </p>
         <Link href="/professors">
           <Button className="bg-purple-600 hover:bg-purple-700">

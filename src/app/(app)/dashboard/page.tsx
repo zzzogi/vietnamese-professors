@@ -71,7 +71,7 @@ export default function DashboardPage() {
               👋 Welcome back, {session?.user?.name || "there"}!
             </h1>
             <p className="text-gray-600">
-              Here's what's happening with your professor connections
+              Here&apos;s what&apos;s happening with your professor connections
             </p>
           </div>
 
@@ -144,7 +144,7 @@ export default function DashboardPage() {
                   No bookmarks yet
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Start bookmarking professors you're interested in
+                  Start bookmarking professors you&apos;re interested in
                 </p>
                 <Link href="/professors">
                   <Button className="bg-purple-600 hover:bg-purple-700">

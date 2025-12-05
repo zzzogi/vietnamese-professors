@@ -9,8 +9,8 @@ export function GuestBanner() {
         <div className="flex items-center gap-3">
           <Lock className="w-5 h-5" />
           <span className="text-sm">
-            <strong>Guest Mode:</strong> You're viewing limited content. Sign up
-            to unlock all features!
+            <strong>Guest Mode:</strong> You&apos;re viewing limited content.
+            Sign up to unlock all features!
           </span>
         </div>
         <Link href="/signup">

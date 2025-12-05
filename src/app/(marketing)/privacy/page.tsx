@@ -102,7 +102,7 @@ export default function PrivacyPage() {
           </p>
 
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            7. Children's Privacy
+            7. Children&apos;s Privacy
           </h2>
           <p className="text-gray-700 mb-6">
             Our services are not intended for children under 13 years of age. We
@@ -116,7 +116,7 @@ export default function PrivacyPage() {
           <p className="text-gray-700 mb-6">
             We may update this Privacy Policy from time to time. We will notify
             you of any changes by posting the new policy on this page and
-            updating the "Last updated" date.
+            updating the &quot;Last updated&quot; date.
           </p>
 
           <h2 className="text-2xl font-bold text-gray-900 mb-4">

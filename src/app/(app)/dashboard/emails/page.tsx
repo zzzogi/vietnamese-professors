@@ -1,11 +1,11 @@
 "use client";
 
-import { useSavedEmails } from "@/hooks/use-save-email";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Mail, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Card } from "@/components/ui/card";
+import { useSavedEmails } from "@/hooks/use-save-email";
+import { Loader2, Mail } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function SavedEmailsPage() {
   const { data, isLoading } = useSavedEmails();

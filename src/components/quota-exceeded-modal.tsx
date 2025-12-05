@@ -38,8 +38,8 @@ export function QuotaExceededModal({
             Email Quota Exceeded
           </DialogTitle>
           <DialogDescription className="text-center">
-            You've reached your monthly limit of {quotaInfo.total} AI-generated
-            emails.
+            You&apos;ve reached your monthly limit of {quotaInfo.total}{" "}
+            AI-generated emails.
           </DialogDescription>
         </DialogHeader>
 

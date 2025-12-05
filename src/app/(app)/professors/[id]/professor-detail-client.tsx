@@ -1,27 +1,27 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { Suspense, useState } from "react";
-import {
-  Mail,
-  MapPin,
-  Building2,
-  GraduationCap,
-  ExternalLink,
-  ChevronLeft,
-  BookOpen,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { BookmarkButton } from "@/components/professors/bookmark-button";
-import { GenerateEmailModal } from "@/components/professors/generate-email-modal";
 import { ExampleEmailModal } from "@/components/professors/example-email-modal";
+import { GenerateEmailModal } from "@/components/professors/generate-email-modal";
 import { RatingDisplay } from "@/components/professors/rating-display";
 import { RatingInput } from "@/components/professors/rating-input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useProfessorRating } from "@/hooks/use-rate-professor";
 import { Professor } from "@prisma/client";
+import {
+  BookOpen,
+  Building2,
+  ChevronLeft,
+  ExternalLink,
+  GraduationCap,
+  Mail,
+  MapPin,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Suspense } from "react";
 
 function ProfessorRatingSection({ professorId }: { professorId: string }) {
   const { data, isLoading } = useProfessorRating(professorId);

@@ -1,16 +1,16 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Mail, Infinity as InfinityIcon, AlertCircle } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
+import { Infinity as InfinityIcon, Mail } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export function QuotaBadge() {
   const { data: session } = useSession();

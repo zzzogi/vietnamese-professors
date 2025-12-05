@@ -12,10 +12,10 @@ export default function TermsPage() {
             1. Acceptance of Terms
           </h2>
           <p className="text-gray-700 mb-6">
-            By accessing and using Vietnamese Professors ("the Service"), you
-            accept and agree to be bound by the terms and provision of this
-            agreement. If you do not agree to these terms, please do not use the
-            Service.
+            By accessing and using Vietnamese Professors (&quot;the
+            Service&quot;), you accept and agree to be bound by the terms and
+            provision of this agreement. If you do not agree to these terms,
+            please do not use the Service.
           </p>
 
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
@@ -143,8 +143,8 @@ export default function TermsPage() {
             9. Disclaimers
           </h2>
           <p className="text-gray-700 mb-6">
-            The Service is provided "as is" without warranties of any kind. We
-            do not guarantee:
+            The Service is provided &quot;as is&quot; without warranties of any
+            kind. We do not guarantee:
           </p>
           <ul className="text-gray-700 space-y-2 mb-6">
             <li>Accuracy or completeness of professor information</li>

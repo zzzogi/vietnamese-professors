@@ -1,7 +1,6 @@
-import { auth } from "@/lib/auth";
-import prisma from "@/lib/prisma";
-import { UserRole } from "@/lib/constants/roles";
 import { FEATURE_LIMITS } from "@/lib/constants/limits";
+import { UserRole } from "@/lib/constants/roles";
+import prisma from "@/lib/prisma";
 
 export function getUserRole(user?: any): UserRole {
   if (!user) return UserRole.GUEST;

@@ -32,8 +32,8 @@ export function EmailDraftCard({ email }: EmailDraftCardProps) {
         `Subject: ${email.subject}\n\n${email.content}`
       );
       toast.success("Copied to clipboard!");
-    } catch (error) {
-      toast.error("Failed to copy");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to copy to clipboard.");
     }
   };
 

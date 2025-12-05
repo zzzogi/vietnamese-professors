@@ -21,7 +21,7 @@ export default function AboutPage() {
             <h2 className="text-2xl font-bold text-gray-900">Our Mission</h2>
           </div>
           <p className="text-gray-700 leading-relaxed mb-4">
-            We believe that finding the right academic mentor shouldn't be
+            We believe that finding the right academic mentor shouldn&apos;t be
             difficult. Vietnamese Professors was created to bridge the gap
             between students and professors, making academic connections easier
             and more accessible for everyone.

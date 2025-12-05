@@ -35,7 +35,8 @@ export function QuotaExceededModal({
             Email Quota Reached
           </DialogTitle>
           <DialogDescription className="text-center">
-            You've used {total - remaining} of {total} free emails this month
+            You&apos;ve used {total - remaining} of {total} free emails this
+            month
           </DialogDescription>
         </DialogHeader>
 

@@ -39,8 +39,8 @@ export default function SignUpPage() {
       // Chuyển sang trang login sau khi đăng ký thành công
       alert("Registration successful! Please login.");
       router.push("/login");
-    } catch (error) {
-      setError("Something went wrong");
+    } catch (error: any) {
+      setError(error.message || "Something went wrong");
     } finally {
       setIsLoading(false);
     }

@@ -54,7 +54,7 @@ export function ProfessorFilters({
     }, 500); // 500ms debounce
 
     return () => clearTimeout(timer);
-  }, [searchInput]);
+  }, [filters, searchInput, onFilterChange]);
 
   const handleSelectChange = (key: keyof FilterState, value: string) => {
     const actualValue = value === "all" ? "" : value;
@@ -206,7 +206,7 @@ export function ProfessorFilters({
           </span>
           {filters.search && (
             <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-md">
-              Search: "{filters.search}"
+              Search: &quot;{filters.search}&quot;
               <button
                 onClick={() => {
                   setSearchInput("");

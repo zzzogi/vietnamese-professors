@@ -191,7 +191,7 @@ export function GenerateEmailModal({
                       Quota exceeded
                     </p>
                     <p className="text-xs text-red-700 mb-2">
-                      You've used all {quota.total} emails this month
+                      You&apos;ve used all {quota.total} emails this month
                     </p>
                     <Link href="/pricing">
                       <Button

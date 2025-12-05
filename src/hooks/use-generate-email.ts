@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "react-hot-toast";
 
 interface GenerateEmailParams {
   professorName: string;

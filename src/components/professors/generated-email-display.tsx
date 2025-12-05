@@ -50,8 +50,8 @@ export function GeneratedEmailDisplay({
       setCopied(true);
       toast.success("Copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      toast.error("Failed to copy");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to copy to clipboard.");
     }
   };
 

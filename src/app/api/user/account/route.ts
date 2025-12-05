@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function DELETE() {
   try {

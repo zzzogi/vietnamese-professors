@@ -1,33 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  User,
-  Mail,
-  Lock,
   Bell,
-  Trash2,
-  Save,
-  Loader2,
-  Shield,
   Crown,
+  Loader2,
+  Lock,
+  Save,
+  Shield,
+  Trash2,
+  User,
 } from "lucide-react";
-import { toast } from "react-hot-toast";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 export default function SettingsPage() {
   const { data: session, update } = useSession();
@@ -35,7 +27,7 @@ export default function SettingsPage() {
 
   // Profile settings
   const [name, setName] = useState(session?.user?.name || "");
-  const [email, setEmail] = useState(session?.user?.email || "");
+  const [email] = useState(session?.user?.email || "");
   const [bio, setBio] = useState("");
   const [university, setUniversity] = useState("");
   const [major, setMajor] = useState("");
@@ -94,6 +86,26 @@ export default function SettingsPage() {
       toast.error("Failed to update preferences");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    try {
+      const response = await fetch("/api/stripe/create-portal", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
+
+      // Redirect to Stripe Customer Portal
+      window.location.href = data.url;
+    } catch (error: any) {
+      console.error("Portal error:", error);
+      toast.error("Failed to open subscription management");
     }
   };
 
@@ -158,7 +170,11 @@ export default function SettingsPage() {
                 You have full access to all premium features
               </p>
               <Link href="/pricing">
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleManageSubscription}
+                >
                   Manage Subscription
                 </Button>
               </Link>

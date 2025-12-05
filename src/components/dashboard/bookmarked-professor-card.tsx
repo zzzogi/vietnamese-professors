@@ -1,13 +1,10 @@
-import { Professor } from "@prisma/client";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { useBookmarkProfessor } from "@/hooks/use-bookmark-professor";
+import { Professor } from "@prisma/client";
 import { Bookmark } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  useBookmarkProfessor,
-  useIsBookmarked,
-} from "@/hooks/use-bookmark-professor";
 
 interface BookmarkedProfessorCardProps {
   professor: Professor;
@@ -16,7 +13,7 @@ interface BookmarkedProfessorCardProps {
 export function BookmarkedProfessorCard({
   professor,
 }: BookmarkedProfessorCardProps) {
-  const isBookmarked = useIsBookmarked(professor.id);
+  // const isBookmarked = useIsBookmarked(professor.id);
   const { mutate, isPending } = useBookmarkProfessor();
 
   const handleUnbookmark = (e: React.MouseEvent) => {

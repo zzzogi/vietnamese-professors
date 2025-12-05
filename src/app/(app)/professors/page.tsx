@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ProfessorFilters,
@@ -35,10 +35,10 @@ export default function ProfessorsPage() {
     },
   });
 
-  const handleFilterChange = (newFilters: FilterState) => {
+  const handleFilterChange = useCallback((newFilters: FilterState) => {
     setFilters(newFilters);
     setPage(1); // Reset to first page on filter change
-  };
+  }, []);
 
   if (error) {
     return (

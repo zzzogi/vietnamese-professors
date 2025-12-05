@@ -13,7 +13,7 @@ interface GenerateEmailButtonProps {
 }
 
 export function GenerateEmailButton({ professor }: GenerateEmailButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [, setIsOpen] = useState(false);
 
   return (
     <AccessGate required={UserRole.USER}>

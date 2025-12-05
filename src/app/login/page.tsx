@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { FaGithub, FaGoogle } from "react-icons/fa";
-import { SiBehance } from "react-icons/si";
 import { Eye, EyeOff } from "lucide-react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { FaGithub, FaGoogle } from "react-icons/fa";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -165,7 +164,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-sm text-gray-600 mt-6">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a
               href="/signup"
               className="text-purple-600 font-semibold hover:underline"
