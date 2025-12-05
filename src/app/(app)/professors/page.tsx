@@ -1,108 +1,146 @@
 "use client";
 
 import { useState } from "react";
-import { useProfessors } from "@/hooks/use-professors";
-import { useDebounce } from "@/hooks/use-debounce";
-import { SearchBar } from "@/components/professors/search-bar";
-import { ProfessorCard } from "@/components/professors/professor-card";
-import { Pagination } from "@/components/professors/pagination";
-import { Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  ProfessorFilters,
+  FilterState,
+} from "@/components/professors/professor-filters";
+import { ProfessorGrid } from "@/components/professors/professor-grid";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useUserRole } from "@/hooks/use-user-role";
+import { AlertCircle } from "lucide-react";
 
 export default function ProfessorsPage() {
-  // State cho search và filters
-  const [searchInput, setSearchInput] = useState("");
+  const { role } = useUserRole();
+  const [filters, setFilters] = useState<FilterState>({
+    search: "",
+    university: "",
+    major: "",
+    location: "",
+  });
   const [page, setPage] = useState(1);
 
-  // Debounce search input (chỉ gọi API sau 400ms user ngừng gõ)
-  const debouncedSearch = useDebounce(searchInput, 400);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["professors", filters, page],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        ...filters,
+        page: page.toString(),
+        limit: "12",
+      });
 
-  // Fetch data với React Query
-  const { data, isLoading, isError, error } = useProfessors({
-    search: debouncedSearch,
-    page,
-    limit: 12,
+      const response = await fetch(`/api/professors?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch professors");
+      return response.json();
+    },
   });
 
-  // Reset về page 1 khi search thay đổi
-  const handleSearchChange = (value: string) => {
-    setSearchInput(value);
-    setPage(1);
+  const handleFilterChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
+    setPage(1); // Reset to first page on filter change
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Professors Directory
-          </h1>
-          <p className="text-gray-600">
-            Browse and search through our database of{" "}
-            {data?.pagination.total || 0} professors
-          </p>
-        </div>
-
-        {/* Search Bar */}
-        <div className="mb-6">
-          <SearchBar
-            value={searchInput}
-            onChange={handleSearchChange}
-            placeholder="Search by name, university, or major..."
-          />
-        </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex justify-center items-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-          </div>
-        )}
-
-        {/* Error State */}
-        {isError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            Error: {error?.message || "Failed to load professors"}
-          </div>
-        )}
-
-        {/* Results */}
-        {!isLoading && !isError && data && (
-          <>
-            {/* Results Count */}
-            <div className="mb-4 text-sm text-gray-600">
-              Showing {data.data.length} of {data.pagination.total} results
-              {debouncedSearch && ` for "${debouncedSearch}"`}
-            </div>
-
-            {/* Professor Grid */}
-            {data.data.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {data.data.map((professor) => (
-                  <ProfessorCard key={professor.id} professor={professor} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20">
-                <p className="text-gray-500 text-lg">No professors found</p>
-                <p className="text-gray-400 text-sm mt-2">
-                  Try adjusting your search terms
-                </p>
-              </div>
-            )}
-
-            {/* Pagination */}
-            {data.pagination.totalPages > 1 && (
-              <Pagination
-                currentPage={page}
-                totalPages={data.pagination.totalPages}
-                onPageChange={setPage}
-                isLoading={isLoading}
-              />
-            )}
-          </>
-        )}
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Failed to Load Professors
+        </h2>
+        <p className="text-gray-600">Please try again later</p>
       </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Browse Professors
+        </h1>
+        <p className="text-gray-600">
+          Discover and connect with verified professors across Vietnam
+        </p>
+      </div>
+
+      {/* Filters */}
+      <ProfessorFilters
+        onFilterChange={handleFilterChange}
+        initialFilters={filters}
+      />
+
+      {/* Results Count */}
+      {data && (
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm text-gray-600">
+            Showing {data.professors.length} of {data.pagination.total}{" "}
+            professors
+          </p>
+          {data.userRole === "GUEST" && (
+            <p className="text-sm text-purple-600 font-medium">
+              Sign in to view all professors
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="space-y-4">
+              <Skeleton className="h-48 w-full" />
+            </div>
+          ))}
+        </div>
+      ) : data?.professors.length > 0 ? (
+        <>
+          <ProfessorGrid professors={data.professors} userRole={role} />
+
+          {/* Pagination */}
+          {data.pagination.totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              <Button
+                variant="outline"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-gray-600">
+                Page {page} of {data.pagination.totalPages}
+              </span>
+              <Button
+                variant="outline"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page >= data.pagination.totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="text-center py-20">
+          <p className="text-gray-600 mb-4">No professors found</p>
+          <Button
+            variant="outline"
+            onClick={() =>
+              handleFilterChange({
+                search: "",
+                university: "",
+                major: "",
+                location: "",
+              })
+            }
+          >
+            Clear Filters
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

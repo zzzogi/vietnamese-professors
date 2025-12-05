@@ -1,11 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { logUsage } from "@/lib/access-control";
 
-/**
- * POST /api/emails/save - Save email draft
- */
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const session = await auth();
 
@@ -21,14 +19,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { professorId, subject, content, language } = await request.json();
-
-    if (!professorId || !subject || !content) {
-      return NextResponse.json(
-        { error: "professorId, subject, and content are required" },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const { professorId, subject, content, language } = body;
 
     const savedEmail = await prisma.savedEmail.create({
       data: {
@@ -36,11 +28,13 @@ export async function POST(request: NextRequest) {
         professorId,
         subject,
         content,
-        language: language || "en",
+        language,
       },
     });
 
-    return NextResponse.json({ savedEmail });
+    await logUsage(user.id, "email_saved", { professorId });
+
+    return NextResponse.json(savedEmail);
   } catch (error) {
     console.error("Save email error:", error);
     return NextResponse.json(

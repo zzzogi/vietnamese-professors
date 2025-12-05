@@ -46,7 +46,7 @@ export function DemoPreview() {
                 <p className="text-gray-600 mb-4">
                   Sign up to unlock full access
                 </p>
-                <Link href="/register">
+                <Link href="/signup">
                   <Button className="bg-purple-600 hover:bg-purple-700">
                     Start Free
                   </Button>

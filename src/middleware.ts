@@ -11,7 +11,7 @@ export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
   // Public paths
-  const publicPaths = ["/", "/pricing", "/about", "/login", "/register"];
+  const publicPaths = ["/", "/pricing", "/about", "/login", "/signup"];
   const isPublicPath = publicPaths.some((p) => path.startsWith(p));
 
   if (isPublicPath) {

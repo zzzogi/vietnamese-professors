@@ -26,7 +26,7 @@ export function GuestBanner() {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Link href="/register">
+            <Link href="/signup">
               <Button
                 size="sm"
                 className="bg-white text-purple-600 hover:bg-gray-100"

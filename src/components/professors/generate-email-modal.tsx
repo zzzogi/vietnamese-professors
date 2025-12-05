@@ -16,6 +16,7 @@ import { GeneratedEmailDisplay } from "./generated-email-display";
 import { useGenerateEmail } from "@/hooks/use-generate-email";
 
 interface GenerateEmailModalProps {
+  professorId: string;
   professorName: string;
   professorEmail: string;
   professorUniversity: string;
@@ -24,6 +25,7 @@ interface GenerateEmailModalProps {
 }
 
 export function GenerateEmailModal({
+  professorId,
   professorName,
   professorEmail,
   professorUniversity,

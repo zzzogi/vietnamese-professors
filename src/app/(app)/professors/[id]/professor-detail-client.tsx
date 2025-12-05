@@ -94,6 +94,7 @@ export function ProfessorDetailClient({
               <div className="space-y-2">
                 <BookmarkButton professorId={professor.id} />
                 <GenerateEmailModal
+                  professorId={professor.id}
                   professorName={professor.name}
                   professorEmail={professor.email}
                   professorUniversity={professor.university}

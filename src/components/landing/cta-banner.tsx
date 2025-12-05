@@ -14,7 +14,7 @@ export function CtaBanner() {
             Join hundreds of students finding their ideal research supervisors
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/register">
+            <Link href="/signup">
               <Button
                 size="lg"
                 className="bg-white text-gray-900 hover:bg-gray-100 text-base px-8 h-12 min-w-[160px]"

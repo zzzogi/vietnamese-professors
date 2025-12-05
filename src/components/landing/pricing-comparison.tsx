@@ -19,7 +19,7 @@ const plans = [
       { text: "Advanced analytics", included: false },
     ],
     cta: "Start Free",
-    href: "/register",
+    href: "/signup",
     highlighted: false,
   },
   {

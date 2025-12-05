@@ -91,7 +91,7 @@ export function Navbar() {
                     Login
                   </Button>
                 </Link>
-                <Link href="/register">
+                <Link href="/signup">
                   <Button
                     size="sm"
                     className="bg-purple-600 hover:bg-purple-700"

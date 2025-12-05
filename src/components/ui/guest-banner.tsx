@@ -13,7 +13,7 @@ export function GuestBanner() {
             to unlock all features!
           </span>
         </div>
-        <Link href="/register">
+        <Link href="/signup">
           <Button
             size="sm"
             className="bg-white text-purple-600 hover:bg-gray-100"

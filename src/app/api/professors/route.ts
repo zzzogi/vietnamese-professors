@@ -1,71 +1,77 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { getUserRole } from "@/lib/access-control";
+import { UserRole } from "@/lib/constants/roles";
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    const session = await auth();
+    const userRole = getUserRole(session?.user as any);
 
-    // Lấy query parameters
+    const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search") || "";
     const university = searchParams.get("university") || "";
     const major = searchParams.get("major") || "";
     const location = searchParams.get("location") || "";
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
-
-    // Tính skip cho pagination
+    const limit = parseInt(searchParams.get("limit") || "12");
     const skip = (page - 1) * limit;
 
-    // Build filter conditions
-    const where: any = {};
+    // Build where clause
+    const where: any = {
+      AND: [
+        search
+          ? {
+              OR: [
+                { name: { contains: search, mode: "insensitive" } },
+                { email: { contains: search, mode: "insensitive" } },
+                {
+                  researchInterests: {
+                    hasSome: [search],
+                  },
+                },
+              ],
+            }
+          : {},
+        university
+          ? { university: { contains: university, mode: "insensitive" } }
+          : {},
+        major ? { major: { contains: major, mode: "insensitive" } } : {},
+        location
+          ? { location: { contains: location, mode: "insensitive" } }
+          : {},
+      ],
+    };
 
-    // Search filter (search trong name, university, major)
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { university: { contains: search, mode: "insensitive" } },
-        { major: { contains: search, mode: "insensitive" } },
-      ];
+    // ✅ Filter PRO professors for non-PRO users
+    if (userRole !== UserRole.PRO) {
+      where.isPro = false;
     }
 
-    // Additional filters
-    if (university) {
-      where.university = { contains: university, mode: "insensitive" };
-    }
-    if (major) {
-      where.major = { contains: major, mode: "insensitive" };
-    }
-    if (location) {
-      where.location = { contains: location, mode: "insensitive" };
-    }
-
-    // Fetch professors với pagination
+    // Fetch professors
     const [professors, total] = await Promise.all([
       prisma.professor.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { name: "asc" },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.professor.count({ where }),
     ]);
 
-    // Tính toán metadata
-    const totalPages = Math.ceil(total / limit);
-    const hasMore = page < totalPages;
-
     return NextResponse.json({
-      data: professors,
+      professors,
       pagination: {
         page,
         limit,
         total,
-        totalPages,
-        hasMore,
+        totalPages: Math.ceil(total / limit),
       },
+      userRole,
     });
   } catch (error) {
-    console.error("API Error:", error);
+    console.error("Professors API error:", error);
     return NextResponse.json(
       { error: "Failed to fetch professors" },
       { status: 500 }

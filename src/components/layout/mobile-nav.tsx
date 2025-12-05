@@ -174,7 +174,7 @@ export function MobileNav() {
             </div>
           ) : (
             <div className="space-y-2">
-              <Link href="/register" onClick={() => setOpen(false)}>
+              <Link href="/signup" onClick={() => setOpen(false)}>
                 <Button className="w-full bg-purple-600 hover:bg-purple-700">
                   Start Free
                 </Button>

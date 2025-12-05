@@ -32,7 +32,7 @@ export function HeroSection() {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-            <Link href="/register">
+            <Link href="/signup">
               <Button
                 size="lg"
                 className="bg-purple-600 hover:bg-purple-700 text-base px-8 h-12 min-w-[160px]"
