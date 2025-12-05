@@ -34,7 +34,7 @@ export function CtaBanner() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-2 border-white text-white hover:bg-white/10 text-base px-8 h-12 min-w-[180px]"
+                    className="border-2 border-white text-black text-base px-8 h-12 min-w-[180px]"
                   >
                     Go to Dashboard
                   </Button>

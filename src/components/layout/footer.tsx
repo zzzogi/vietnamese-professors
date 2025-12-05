@@ -1,53 +1,36 @@
 import Link from "next/link";
-import { GraduationCap, Mail } from "lucide-react";
 
 export function Footer() {
-  const currentYear = new Date().getFullYear();
-
   return (
-    <footer className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
+    <footer className="bg-gray-900 text-gray-300 py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
-                <GraduationCap className="h-5 w-5 text-white" />
-              </div>
-              <span className="font-bold text-white text-lg">
-                Vietnamese Professors
-              </span>
-            </Link>
-            <p className="text-sm">
-              Connecting students with verified professors across Vietnam.
+            <h3 className="text-white font-bold text-lg mb-4">
+              Vietnamese Professors
+            </h3>
+            <p className="text-sm text-gray-400">
+              Connecting students with verified professors across Vietnam
             </p>
           </div>
 
           {/* Product */}
           <div>
-            <h3 className="font-semibold text-white mb-4 text-sm">Product</h3>
+            <h4 className="text-white font-semibold mb-4">Product</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link
-                  href="/professors"
-                  className="hover:text-purple-400 transition-colors"
-                >
+                <Link href="/professors" className="hover:text-white">
                   Browse Professors
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/leaderboard"
-                  className="hover:text-purple-400 transition-colors"
-                >
+                <Link href="/leaderboard" className="hover:text-white">
                   Leaderboard
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/pricing"
-                  className="hover:text-purple-400 transition-colors"
-                >
+                <Link href="/pricing" className="hover:text-white">
                   Pricing
                 </Link>
               </li>
@@ -56,52 +39,52 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="font-semibold text-white mb-4 text-sm">Company</h3>
+            <h4 className="text-white font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link
-                  href="/about"
-                  className="hover:text-purple-400 transition-colors"
-                >
-                  About
+                <Link href="/about" className="hover:text-white">
+                  About Us
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/privacy"
-                  className="hover:text-purple-400 transition-colors"
-                >
-                  Privacy
+                <Link href="/privacy" className="hover:text-white">
+                  Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/terms"
-                  className="hover:text-purple-400 transition-colors"
-                >
-                  Terms
+                <Link href="/terms" className="hover:text-white">
+                  Terms of Service
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Support */}
           <div>
-            <h3 className="font-semibold text-white mb-4 text-sm">Contact</h3>
-            <a
-              href="mailto:support@vietnameseprofessors.com"
-              className="flex items-center gap-2 text-sm hover:text-purple-400 transition-colors"
-            >
-              <Mail className="w-4 h-4" />
-              support@vietnameseprofessors.com
-            </a>
+            <h4 className="text-white font-semibold mb-4">Support</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a
+                  href="mailto:support@vietnameseprofessors.com"
+                  className="hover:text-white"
+                >
+                  Contact Us
+                </a>
+              </li>
+              <li>
+                <Link href="/settings" className="hover:text-white">
+                  Settings
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* Bottom */}
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
-          <p>© {currentYear} Vietnamese Professors. All rights reserved.</p>
-          <p>Made with ❤️ for Vietnamese students</p>
+        <div className="border-t border-gray-800 pt-8 text-center text-sm">
+          <p>
+            © {new Date().getFullYear()} Vietnamese Professors. All rights
+            reserved.
+          </p>
         </div>
       </div>
     </footer>
