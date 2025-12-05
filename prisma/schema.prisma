@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER   // Free tier
+  PRO    // Paid tier
+}
+
 model User {
   id                String              @id @default(auto()) @map("_id") @db.ObjectId
   name              String?
@@ -14,11 +19,24 @@ model User {
   emailVerified     DateTime?
   image             String?
   password          String?
+  
+  // ✅ NEW: Role & limits
+  role              UserRole            @default(USER)
+  emailQuota        Int                 @default(10)  // Monthly quota for free users
+  emailsUsed        Int                 @default(0)
+  quotaResetAt      DateTime            @default(now())
+  
+  // ✅ NEW: PRO subscription
+  isPro             Boolean             @default(false)
+  proExpiresAt      DateTime?
+  stripeCustomerId  String?
+  
   accounts          Account[]
   sessions          Session[]
   bookmarks         Bookmark[]
   savedEmails       SavedEmail[]
   professorRatings  ProfessorRating[]
+  
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 }
@@ -72,15 +90,21 @@ model Professor {
   researchInterests String[]
   googleScholarUrl  String?
   publicationUrl    String?
+  
+  // ✅ NEW: PRO exclusive flag
+  isPro             Boolean             @default(false)
+  
   bookmarks         Bookmark[]
   savedEmails       SavedEmail[]
   ratings           ProfessorRating[]
+  
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 
   @@index([name])
   @@index([university])
   @@index([major])
+  @@index([isPro])
 }
 
 model Bookmark {
@@ -125,4 +149,16 @@ model ProfessorRating {
 
   @@unique([userId, professorId])
   @@index([professorId])
+}
+
+// ✅ NEW: Usage tracking
+model UsageLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  action      String   // "email_generated", "profile_viewed", etc.
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }
