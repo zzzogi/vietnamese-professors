@@ -1,66 +1,142 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { getUserRole } from "@/lib/access-control";
-import { UserRole } from "@/lib/constants/roles";
-import { FEATURE_LIMITS } from "@/lib/constants/limits";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    const userRole = getUserRole(session?.user as any);
+    const { searchParams } = new URL(request.url);
 
-    const searchParams = request.nextUrl.searchParams;
-    const sortBy = searchParams.get("sortBy") || "rating";
-    const limit = parseInt(searchParams.get("limit") || "20");
+    // Parse filters
+    const timeRange = searchParams.get("timeRange") || "all"; // all, 30d, 90d, year
+    const location = searchParams.get("location") || "";
+    const major = searchParams.get("major") || "";
+    const minRatings = parseInt(searchParams.get("minRatings") || "3");
 
-    // Get leaderboard limit for user role
-    const viewLimit = FEATURE_LIMITS[userRole].leaderboardView;
-    const actualLimit =
-      viewLimit === Infinity ? limit : Math.min(limit, viewLimit);
+    // Calculate date filter
+    let dateFilter: Date | undefined;
+    const now = new Date();
 
-    // Fetch professors with ratings
-    const professors = await prisma.professor.findMany({
-      include: {
-        ratings: true,
-        _count: {
-          select: {
-            ratings: true,
-          },
+    switch (timeRange) {
+      case "30d":
+        dateFilter = new Date(now.setDate(now.getDate() - 30));
+        break;
+      case "90d":
+        dateFilter = new Date(now.setDate(now.getDate() - 90));
+        break;
+      case "year":
+        dateFilter = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+      default:
+        dateFilter = undefined;
+    }
+
+    // Build professor filter
+    const professorFilter: any = {};
+    if (location) {
+      professorFilter.location = location;
+    }
+    if (major) {
+      professorFilter.major = major;
+    }
+
+    // Fetch Top Rated Professors
+    const ratingAggregates = await prisma.professorRating.groupBy({
+      by: ["professorId"],
+      _avg: { rating: true },
+      _count: { rating: true },
+      where: dateFilter ? { createdAt: { gte: dateFilter } } : undefined,
+      having: {
+        rating: {
+          _count: { gte: minRatings },
         },
       },
-      take: actualLimit,
+      orderBy: {
+        _avg: {
+          rating: "desc",
+        },
+      },
+      take: 10,
     });
 
-    // Calculate average ratings
-    const leaderboard = professors.map((professor) => {
-      const totalRatings = professor.ratings.length;
-      const avgRating =
-        totalRatings > 0
-          ? professor.ratings.reduce((sum, r) => sum + r.rating, 0) /
-            totalRatings
-          : 0;
+    const topRatedIds = ratingAggregates.map((r) => r.professorId);
 
-      return {
-        id: professor.id,
-        name: professor.name,
-        university: professor.university,
-        major: professor.major,
-        imageUrl: professor.imageUrl,
-        avgRating: Math.round(avgRating * 10) / 10,
-        totalRatings,
-        isPro: professor.isPro,
-      };
+    const topRatedProfessors = await prisma.professor.findMany({
+      where: {
+        id: { in: topRatedIds },
+        ...professorFilter,
+      },
     });
 
-    // Sort by rating
-    leaderboard.sort((a, b) => b.avgRating - a.avgRating);
+    // Map professors with their ratings
+    const topRated = ratingAggregates
+      .map((rating) => {
+        const professor = topRatedProfessors.find(
+          (p) => p.id === rating.professorId
+        );
+        if (!professor) return null;
+
+        return {
+          professor,
+          averageRating: rating._avg.rating || 0,
+          ratingCount: rating._count.rating,
+        };
+      })
+      .filter(Boolean);
+
+    // Fetch Most Contacted Professors
+    const contactAggregates = await prisma.savedEmail.groupBy({
+      by: ["professorId"],
+      _count: { id: true },
+      where: dateFilter ? { createdAt: { gte: dateFilter } } : undefined,
+      orderBy: {
+        _count: {
+          id: "desc",
+        },
+      },
+      take: 10,
+    });
+
+    const mostContactedIds = contactAggregates.map((c) => c.professorId);
+
+    const mostContactedProfessors = await prisma.professor.findMany({
+      where: {
+        id: { in: mostContactedIds },
+        ...professorFilter,
+      },
+    });
+
+    const mostContacted = contactAggregates
+      .map((contact) => {
+        const professor = mostContactedProfessors.find(
+          (p) => p.id === contact.professorId
+        );
+        if (!professor) return null;
+
+        return {
+          professor,
+          contactCount: contact._count.id,
+        };
+      })
+      .filter(Boolean);
+
+    // Fetch available filter options
+    const [locations, majors] = await Promise.all([
+      prisma.professor.findMany({
+        select: { location: true },
+        distinct: ["location"],
+      }),
+      prisma.professor.findMany({
+        select: { major: true },
+        distinct: ["major"],
+      }),
+    ]);
 
     return NextResponse.json({
-      leaderboard,
-      userRole,
-      viewLimit,
-      total: professors.length,
+      topRated,
+      mostContacted,
+      filters: {
+        locations: locations.map((l) => l.location).sort(),
+        majors: majors.map((m) => m.major).sort(),
+      },
     });
   } catch (error) {
     console.error("Leaderboard API error:", error);

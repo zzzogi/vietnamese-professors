@@ -6,14 +6,12 @@ import {
   ProfessorFilters,
   FilterState,
 } from "@/components/professors/professor-filters";
-import { ProfessorGrid } from "@/components/professors/professor-grid";
+import { ProfessorCard } from "@/components/professors/professor-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUserRole } from "@/hooks/use-user-role";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ProfessorsPage() {
-  const { role } = useUserRole();
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     university: "",
@@ -57,7 +55,7 @@ export default function ProfessorsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Browse Professors
         </h1>
@@ -72,12 +70,19 @@ export default function ProfessorsPage() {
         initialFilters={filters}
       />
 
-      {/* Results Count */}
+      {/* Results Info */}
       {data && (
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-gray-600">
-            Showing {data.professors.length} of {data.pagination.total}{" "}
-            professors
+            {data.pagination.total > 0 ? (
+              <>
+                Showing {(page - 1) * 12 + 1}-
+                {Math.min(page * 12, data.pagination.total)} of{" "}
+                {data.pagination.total} professors
+              </>
+            ) : (
+              "No professors found"
+            )}
           </p>
           {data.userRole === "GUEST" && (
             <p className="text-sm text-purple-600 font-medium">
@@ -92,40 +97,86 @@ export default function ProfessorsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="space-y-4">
-              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-64 w-full rounded-lg" />
             </div>
           ))}
         </div>
       ) : data?.professors.length > 0 ? (
         <>
-          <ProfessorGrid professors={data.professors} userRole={role} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {data.professors.map((professor: any) => (
+              <ProfessorCard key={professor.id} professor={professor} />
+            ))}
+          </div>
 
           {/* Pagination */}
           {data.pagination.totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-8">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
               >
+                <ChevronLeft className="h-4 w-4 mr-1" />
                 Previous
               </Button>
-              <span className="text-sm text-gray-600">
-                Page {page} of {data.pagination.totalPages}
-              </span>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: data.pagination.totalPages }).map(
+                  (_, i) => {
+                    const pageNum = i + 1;
+                    // Show first, last, current, and adjacent pages
+                    if (
+                      pageNum === 1 ||
+                      pageNum === data.pagination.totalPages ||
+                      Math.abs(pageNum - page) <= 1
+                    ) {
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={page === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setPage(pageNum)}
+                          className={
+                            page === pageNum
+                              ? "bg-purple-600 hover:bg-purple-700"
+                              : ""
+                          }
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    } else if (pageNum === page - 2 || pageNum === page + 2) {
+                      return (
+                        <span key={pageNum} className="px-2 text-gray-400">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  }
+                )}
+              </div>
+
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= data.pagination.totalPages}
               >
                 Next
+                <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
           )}
         </>
       ) : (
-        <div className="text-center py-20">
-          <p className="text-gray-600 mb-4">No professors found</p>
+        <div className="text-center py-20 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+          <p className="text-gray-600 mb-4 text-lg">No professors found</p>
+          <p className="text-sm text-gray-500 mb-4">
+            Try adjusting your filters to see more results
+          </p>
           <Button
             variant="outline"
             onClick={() =>
@@ -137,7 +188,7 @@ export default function ProfessorsPage() {
               })
             }
           >
-            Clear Filters
+            Clear All Filters
           </Button>
         </div>
       )}

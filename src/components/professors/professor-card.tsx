@@ -1,34 +1,25 @@
 import { Professor } from "@prisma/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Mail, Crown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MapPin, Building2, Mail, Star, Bookmark, Crown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 interface ProfessorCardProps {
-  professor: Professor;
-  showProBadge?: boolean;
+  professor: Professor & {
+    averageRating?: number;
+    totalRatings?: number;
+    totalBookmarks?: number;
+  };
 }
 
-export function ProfessorCard({
-  professor,
-  showProBadge = true,
-}: ProfessorCardProps) {
+export function ProfessorCard({ professor }: ProfessorCardProps) {
   return (
-    <Link href={`/professors/${professor.id}`}>
-      <Card className="p-6 hover:shadow-lg transition-all cursor-pointer h-full border border-gray-200 hover:border-purple-300">
-        {/* PRO Badge */}
-        {showProBadge && professor.isPro && (
-          <div className="mb-3">
-            <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0">
-              <Crown className="w-3 h-3 mr-1" />
-              PRO
-            </Badge>
-          </div>
-        )}
-
+    <Card className="overflow-hidden hover:shadow-lg transition-all border-gray-200">
+      <div className="p-6">
+        {/* Header with Avatar */}
         <div className="flex items-start gap-4 mb-4">
-          {/* Avatar */}
           <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
             {professor.imageUrl ? (
               <Image
@@ -44,54 +35,91 @@ export function ProfessorCard({
             )}
           </div>
 
-          {/* Info */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 truncate mb-1">
-              {professor.name}
-            </h3>
-            <p className="text-sm text-gray-600 truncate mb-2">
-              {professor.university}
-            </p>
-            <div className="flex items-center gap-2 text-xs text-gray-500">
-              <MapPin className="w-3 h-3" />
-              <span className="truncate">{professor.location}</span>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-gray-900 truncate">
+                {professor.name}
+              </h3>
+              {professor.isPro && (
+                <Crown className="w-4 h-4 text-purple-600 flex-shrink-0" />
+              )}
             </div>
+
+            {/* Rating */}
+            {professor.averageRating && professor.totalRatings ? (
+              <div className="flex items-center gap-1 mb-2">
+                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                <span className="text-sm font-medium text-gray-900">
+                  {professor.averageRating.toFixed(1)}
+                </span>
+                <span className="text-xs text-gray-500">
+                  ({professor.totalRatings})
+                </span>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500 mb-2">No ratings yet</p>
+            )}
+
+            <Badge variant="secondary" className="text-xs">
+              {professor.major}
+            </Badge>
           </div>
         </div>
 
-        {/* Major */}
-        <div className="mb-3">
-          <Badge variant="secondary" className="text-xs">
-            {professor.major}
-          </Badge>
+        {/* University & Location */}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Building2 className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">{professor.university}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <MapPin className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">{professor.location}</span>
+          </div>
         </div>
+
+        {/* Bio Preview */}
+        {professor.bio && (
+          <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+            {professor.bio}
+          </p>
+        )}
 
         {/* Research Interests */}
         {professor.researchInterests &&
           professor.researchInterests.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-3">
+            <div className="flex flex-wrap gap-1 mb-4">
               {professor.researchInterests.slice(0, 2).map((interest, idx) => (
                 <span
                   key={idx}
-                  className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
+                  className="text-xs px-2 py-1 bg-purple-50 text-purple-700 rounded"
                 >
                   {interest}
                 </span>
               ))}
               {professor.researchInterests.length > 2 && (
-                <span className="text-xs text-gray-500 px-2 py-1">
-                  +{professor.researchInterests.length - 2}
+                <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                  +{professor.researchInterests.length - 2} more
                 </span>
               )}
             </div>
           )}
 
-        {/* Email */}
-        <div className="flex items-center gap-2 text-xs text-gray-500 pt-3 border-t border-gray-100">
-          <Mail className="w-3 h-3" />
-          <span className="truncate">{professor.email}</span>
+        {/* Actions */}
+        <div className="flex gap-2">
+          <Link href={`/professors/${professor.id}`} className="flex-1">
+            <Button
+              className="w-full bg-purple-600 hover:bg-purple-700"
+              size="sm"
+            >
+              View Profile
+            </Button>
+          </Link>
+          <Button variant="outline" size="sm">
+            <Bookmark className="w-4 h-4" />
+          </Button>
         </div>
-      </Card>
-    </Link>
+      </div>
+    </Card>
   );
 }
