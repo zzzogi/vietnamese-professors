@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
@@ -128,7 +128,7 @@ async function main() {
             )}`
           : null,
         publicationUrl: faker.datatype.boolean() ? faker.internet.url() : null,
-        isPro, // ✅ NEW
+        isPro, // ✅ PRO-only flag
       },
     });
 
@@ -154,7 +154,7 @@ async function main() {
     data: {
       name: "Pro User",
       email: "pro@example.com",
-      role: UserRole.PRO,
+      role: "PRO", // ✅ Changed from UserRole.PRO to string
       isPro: true,
       emailQuota: 999,
       emailsUsed: 0,
@@ -168,14 +168,13 @@ async function main() {
   for (let i = 0; i < 9; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
-
     const emailsUsed = faker.number.int({ min: 0, max: 7 });
 
     const user = await prisma.user.create({
       data: {
         name: `${firstName} ${lastName}`,
         email: faker.internet.email({ firstName, lastName }).toLowerCase(),
-        role: UserRole.USER,
+        role: "USER", // ✅ Changed from UserRole.USER to string
         isPro: false,
         emailQuota: 10,
         emailsUsed,
@@ -323,13 +322,35 @@ async function main() {
     "profile_viewed",
     "bookmark_added",
     "search_performed",
+    "rating_submitted",
   ];
 
   for (let i = 0; i < 200; i++) {
+    const user = faker.helpers.arrayElement(demoUsers);
+    const action = faker.helpers.arrayElement(actions);
+
+    // Create relevant metadata based on action
+    let metadata: any = {};
+    if (action === "email_generated") {
+      metadata = {
+        professorId: faker.helpers.arrayElement(createdProfessors).id,
+        language: faker.helpers.arrayElement(["en", "vi"]),
+      };
+    } else if (action === "profile_viewed") {
+      metadata = {
+        professorId: faker.helpers.arrayElement(createdProfessors).id,
+      };
+    } else if (action === "search_performed") {
+      metadata = {
+        query: faker.helpers.arrayElement(majors),
+        resultsCount: faker.number.int({ min: 5, max: 50 }),
+      };
+    }
+
     usageLogs.push({
-      userId: faker.helpers.arrayElement(demoUsers).id,
-      action: faker.helpers.arrayElement(actions),
-      metadata: {},
+      userId: user.id,
+      action,
+      metadata,
       createdAt: faker.helpers.arrayElement(emailDates),
     });
   }
@@ -352,6 +373,10 @@ async function main() {
   console.log("\n🔑 Test Accounts:");
   console.log("   PRO User: pro@example.com");
   console.log("   Free Users: Check database for other emails");
+  console.log("\n💡 PRO Features:");
+  console.log("   - Access to 10 exclusive PRO-only professors");
+  console.log("   - 999 email quota vs 10 for free users");
+  console.log("   - PRO expires in 1 year");
 }
 
 function generateDateRange(daysAgo: number): Date[] {

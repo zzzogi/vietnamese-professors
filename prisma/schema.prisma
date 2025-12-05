@@ -8,37 +8,37 @@ datasource db {
 }
 
 enum UserRole {
-  USER   // Free tier
-  PRO    // Paid tier
+  USER // Free tier
+  PRO // Paid tier
 }
 
 model User {
-  id                String              @id @default(auto()) @map("_id") @db.ObjectId
-  name              String?
-  email             String              @unique
-  emailVerified     DateTime?
-  image             String?
-  password          String?
-  
-  // ✅ NEW: Role & limits
-  role              UserRole            @default(USER)
-  emailQuota        Int                 @default(10)  // Monthly quota for free users
-  emailsUsed        Int                 @default(0)
-  quotaResetAt      DateTime            @default(now())
-  
-  // ✅ NEW: PRO subscription
-  isPro             Boolean             @default(false)
-  proExpiresAt      DateTime?
-  stripeCustomerId  String?
-  
-  accounts          Account[]
-  sessions          Session[]
-  bookmarks         Bookmark[]
-  savedEmails       SavedEmail[]
-  professorRatings  ProfessorRating[]
-  
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("USER") // USER | PRO
+  isPro         Boolean   @default(false)
+
+  // Quota tracking
+  emailQuota   Int       @default(10)
+  emailsUsed   Int       @default(0)
+  quotaResetAt DateTime?
+
+  // PRO plan
+  planExpiresAt DateTime?
+  proExpiresAt  DateTime?
+
+  accounts    Account[]
+  sessions    Session[]
+  bookmarks   Bookmark[]
+  ratings     ProfessorRating[]
+  savedEmails SavedEmail[]
+  usageLogs   UsageLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Account {
@@ -78,9 +78,9 @@ model VerificationToken {
 }
 
 model Professor {
-  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
   name              String
-  email             String              @unique
+  email             String   @unique
   university        String
   department        String
   major             String
@@ -90,16 +90,16 @@ model Professor {
   researchInterests String[]
   googleScholarUrl  String?
   publicationUrl    String?
-  
+
   // ✅ NEW: PRO exclusive flag
-  isPro             Boolean             @default(false)
-  
-  bookmarks         Bookmark[]
-  savedEmails       SavedEmail[]
-  ratings           ProfessorRating[]
-  
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  isPro Boolean @default(false)
+
+  bookmarks   Bookmark[]
+  savedEmails SavedEmail[]
+  ratings     ProfessorRating[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([name])
   @@index([university])
@@ -153,11 +153,13 @@ model ProfessorRating {
 
 // ✅ NEW: Usage tracking
 model UsageLog {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  action      String   // "email_generated", "profile_viewed", etc.
-  metadata    Json?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  action    String // "email_generated", "profile_viewed", etc.
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])

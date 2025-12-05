@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
 interface GenerateEmailParams {
   professorName: string;
@@ -7,10 +7,10 @@ interface GenerateEmailParams {
   professorUniversity: string;
   professorMajor: string;
   researchInterests: string[];
-  userBackground?: string;
-  intention?: string;
-  topic?: string;
-  tone?: string;
+  userBackground: string;
+  intention: string;
+  topic: string;
+  tone: string;
   language: "en" | "vi";
 }
 
@@ -22,32 +22,39 @@ interface GenerateEmailResponse {
     language: string;
     generatedAt: string;
   };
+  quota: {
+    remaining: number;
+    total: number;
+    used: number;
+    resetAt: Date | null;
+  };
 }
 
-/**
- * React Query mutation hook for generating emails
- */
 export function useGenerateEmail() {
   return useMutation<GenerateEmailResponse, Error, GenerateEmailParams>({
-    mutationFn: async (params) => {
+    mutationFn: async (params: GenerateEmailParams) => {
       const response = await fetch("/api/generate-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to generate email");
+        // ✅ Create error with response data
+        const error: any = new Error(
+          data.message || data.error || "Failed to generate email"
+        );
+        error.response = { status: response.status, data };
+        throw error;
       }
 
-      return response.json();
+      return data;
     },
-    onSuccess: () => {
-      toast.success("Email generated successfully!");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to generate email");
+    onError: (error: any) => {
+      // Don't show toast here - let the component handle it
+      console.error("Email generation error:", error);
     },
   });
 }

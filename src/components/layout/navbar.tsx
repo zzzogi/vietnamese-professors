@@ -1,15 +1,17 @@
 "use client";
 
+import { QuotaBadge } from "@/components/quota-badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { GraduationCap } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GraduationCap, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { UserMenu } from "./user-menu";
 import { MobileNav } from "./mobile-nav";
-import { useSession } from "next-auth/react";
-import { cn } from "@/lib/utils";
+import { UserMenu } from "./user-menu";
 
 const navLinks = [
+  { href: "/about", label: "About" },
   { href: "/professors", label: "Browse Professors" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/pricing", label: "Pricing" },
@@ -20,7 +22,7 @@ export function Navbar() {
   const { data: session, status } = useSession();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <nav className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Mobile Menu Button */}
@@ -60,17 +62,8 @@ export function Navbar() {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-3">
-            {/* Search Icon (hidden on mobile) */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden sm:flex"
-              asChild
-            >
-              <Link href="/professors">
-                <Search className="h-4 w-4" />
-              </Link>
-            </Button>
+            {/* Quota Badge */}
+            {session && <QuotaBadge />}
 
             {/* Auth Section */}
             {status === "loading" ? (
@@ -105,6 +98,6 @@ export function Navbar() {
           </div>
         </div>
       </div>
-    </header>
+    </nav>
   );
 }

@@ -1,33 +1,19 @@
-import { UserRole, hasRole } from "./constants/roles";
-import { FEATURE_LIMITS } from "./constants/limits";
-import prisma from "./prisma";
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { UserRole } from "@/lib/constants/roles";
+import { FEATURE_LIMITS } from "@/lib/constants/limits";
 
-/**
- * Get user role from session
- */
-export function getUserRole(user: { isPro?: boolean } | null): UserRole {
+export function getUserRole(user?: any): UserRole {
   if (!user) return UserRole.GUEST;
-  return user.isPro ? UserRole.PRO : UserRole.USER;
+  return (user.role as UserRole) || UserRole.USER;
 }
 
-/**
- * Check if user can access a feature
- */
-export function canAccessFeature(
-  userRole: UserRole,
-  requiredRole: UserRole | UserRole[]
-): boolean {
-  return hasRole(userRole, requiredRole);
-}
-
-/**
- * Check if user has reached email quota
- */
+// ✅ Check if user has email quota remaining
 export async function hasEmailQuota(userId: string): Promise<boolean> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
-      isPro: true,
+      role: true,
       emailQuota: true,
       emailsUsed: true,
       quotaResetAt: true,
@@ -35,18 +21,22 @@ export async function hasEmailQuota(userId: string): Promise<boolean> {
   });
 
   if (!user) return false;
-  if (user.isPro) return true; // PRO has unlimited
+
+  const userRole = user.role as UserRole;
+  const limit = FEATURE_LIMITS[userRole].emailGeneration;
+
+  // PRO has unlimited
+  if (limit === Infinity) return true;
 
   // Check if quota needs reset (monthly)
   const now = new Date();
-  const resetDate = new Date(user.quotaResetAt);
-  if (now > resetDate) {
+  if (user.quotaResetAt && user.quotaResetAt < now) {
     // Reset quota
     await prisma.user.update({
       where: { id: userId },
       data: {
         emailsUsed: 0,
-        quotaResetAt: new Date(now.setMonth(now.getMonth() + 1)),
+        quotaResetAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // +30 days
       },
     });
     return true;
@@ -55,17 +45,8 @@ export async function hasEmailQuota(userId: string): Promise<boolean> {
   return user.emailsUsed < user.emailQuota;
 }
 
-/**
- * Increment email usage
- */
+// ✅ Increment email usage count
 export async function incrementEmailUsage(userId: string): Promise<void> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { isPro: true },
-  });
-
-  if (user?.isPro) return; // PRO users don't count
-
   await prisma.user.update({
     where: { id: userId },
     data: {
@@ -74,9 +55,41 @@ export async function incrementEmailUsage(userId: string): Promise<void> {
   });
 }
 
-/**
- * Log usage for analytics
- */
+// ✅ Get remaining quota
+export async function getRemainingQuota(userId: string): Promise<{
+  used: number;
+  total: number;
+  remaining: number;
+  resetAt: Date | null;
+}> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      role: true,
+      emailQuota: true,
+      emailsUsed: true,
+      quotaResetAt: true,
+    },
+  });
+
+  if (!user) {
+    return { used: 0, total: 0, remaining: 0, resetAt: null };
+  }
+
+  const userRole = user.role as UserRole;
+  const total = FEATURE_LIMITS[userRole].emailGeneration;
+  const used = user.emailsUsed;
+  const remaining = total === Infinity ? Infinity : Math.max(0, total - used);
+
+  return {
+    used,
+    total: total === Infinity ? -1 : total, // -1 represents unlimited
+    remaining: remaining === Infinity ? -1 : remaining,
+    resetAt: user.quotaResetAt,
+  };
+}
+
+// ✅ Log user actions for analytics
 export async function logUsage(
   userId: string,
   action: string,
@@ -91,34 +104,42 @@ export async function logUsage(
   });
 }
 
-/**
- * Check if professor is accessible to user
- */
-export function canAccessProfessor(
-  professor: { isPro: boolean },
-  userRole: UserRole
-): boolean {
-  if (!professor.isPro) return true; // Public professors
-  return userRole === UserRole.PRO;
-}
+// ✅ Check professor view limit
+export async function canViewProfessor(
+  userId: string | null,
+  professorIndex: number
+): Promise<boolean> {
+  if (!userId) {
+    // Guest user - limited to 5
+    return professorIndex < FEATURE_LIMITS[UserRole.GUEST].professorViews;
+  }
 
-/**
- * Get remaining email quota
- */
-export async function getRemainingEmailQuota(
-  userId: string
-): Promise<number | "unlimited"> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: {
-      isPro: true,
-      emailQuota: true,
-      emailsUsed: true,
-    },
+    select: { role: true },
   });
 
-  if (!user) return 0;
-  if (user.isPro) return "unlimited";
+  if (!user) return false;
 
-  return Math.max(0, user.emailQuota - user.emailsUsed);
+  const userRole = user.role as UserRole;
+  const limit = FEATURE_LIMITS[userRole].professorViews;
+
+  return limit === Infinity || professorIndex < limit;
+}
+
+// ✅ Reset quota for all users (run daily via cron)
+export async function resetExpiredQuotas(): Promise<void> {
+  const now = new Date();
+
+  await prisma.user.updateMany({
+    where: {
+      quotaResetAt: {
+        lt: now,
+      },
+    },
+    data: {
+      emailsUsed: 0,
+      quotaResetAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+    },
+  });
 }

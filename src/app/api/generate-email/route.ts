@@ -1,11 +1,73 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import {
+  hasEmailQuota,
+  incrementEmailUsage,
+  logUsage,
+  getRemainingQuota,
+} from "@/lib/access-control";
+import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(request: NextRequest) {
   try {
+    // ✅ 1. Check Authentication
+    const session = await auth();
+
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Please login to generate emails" },
+        { status: 401 }
+      );
+    }
+
+    // ✅ 2. Get User from Database
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: {
+        id: true,
+        role: true,
+        emailQuota: true,
+        emailsUsed: true,
+        quotaResetAt: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // After user fetch
+    const rateLimit = checkRateLimit(user.id, 10, 60000); // 10 requests per minute
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: "Please wait a moment before generating another email",
+        },
+        { status: 429 }
+      );
+    }
+
+    // ✅ 3. Check Quota BEFORE Generating
+    const hasQuota = await hasEmailQuota(user.id);
+    if (!hasQuota) {
+      const quotaInfo = await getRemainingQuota(user.id);
+      return NextResponse.json(
+        {
+          error: "Email quota exceeded",
+          message: `You've used all ${quotaInfo.total} emails this month. Upgrade to PRO for unlimited access.`,
+          quotaInfo,
+        },
+        { status: 403 }
+      );
+    }
+
+    // ✅ 4. Parse Request Body
     const body = await request.json();
     const {
       professorName,
@@ -27,6 +89,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // ✅ 5. Build Prompt
     const prompt = buildPrompt({
       professorName,
       professorEmail,
@@ -40,11 +103,27 @@ export async function POST(request: NextRequest) {
       language,
     });
 
+    // ✅ 6. Generate Email with Gemini
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-
     const result = await model.generateContent(prompt);
     const generatedEmail = result.response.text();
 
+    // ✅ 7. Increment Usage Count (AFTER successful generation)
+    await incrementEmailUsage(user.id);
+
+    // ✅ 8. Log Usage for Analytics
+    await logUsage(user.id, "email_generated", {
+      professorName,
+      professorEmail,
+      language,
+      tone,
+      intention: intention || "general",
+    });
+
+    // ✅ 9. Get Updated Quota
+    const updatedQuota = await getRemainingQuota(user.id);
+
+    // ✅ 10. Return Success Response with Quota Info
     return NextResponse.json({
       email: generatedEmail,
       metadata: {
@@ -53,19 +132,46 @@ export async function POST(request: NextRequest) {
         language,
         generatedAt: new Date().toISOString(),
       },
+      quota: {
+        remaining: updatedQuota.remaining,
+        total: updatedQuota.total,
+        used: updatedQuota.used,
+        resetAt: updatedQuota.resetAt,
+      },
     });
   } catch (error: any) {
     console.error("Email generation error:", error);
 
+    // Handle specific errors
     if (error.message?.includes("API key")) {
       return NextResponse.json(
-        { error: "API key not configured. Please add GEMINI_API_KEY to .env" },
+        {
+          error: "API configuration error",
+          message:
+            "AI service is temporarily unavailable. Please try again later.",
+        },
         { status: 500 }
       );
     }
 
+    if (
+      error.message?.includes("quota") ||
+      error.message?.includes("rate limit")
+    ) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: "Too many requests. Please wait a moment and try again.",
+        },
+        { status: 429 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to generate email. Please try again." },
+      {
+        error: "Failed to generate email",
+        message: "Something went wrong. Please try again.",
+      },
       { status: 500 }
     );
   }

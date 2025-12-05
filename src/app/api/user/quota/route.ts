@@ -1,39 +1,18 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getRemainingEmailQuota } from "@/lib/access-control";
-import prisma from "@/lib/prisma";
+import { getRemainingQuota } from "@/lib/access-control";
 
 export async function GET() {
   try {
     const session = await auth();
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: {
-        id: true,
-        isPro: true,
-        emailQuota: true,
-        emailsUsed: true,
-        quotaResetAt: true,
-      },
-    });
+    const quota = await getRemainingQuota(session.user.id);
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const remaining = await getRemainingEmailQuota(user.id);
-
-    return NextResponse.json({
-      remaining,
-      total: user.emailQuota,
-      used: user.emailsUsed,
-      resetDate: user.quotaResetAt.toISOString(),
-    });
+    return NextResponse.json(quota);
   } catch (error) {
     console.error("Quota API error:", error);
     return NextResponse.json(

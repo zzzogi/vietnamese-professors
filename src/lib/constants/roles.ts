@@ -1,7 +1,7 @@
 export enum UserRole {
-  GUEST = "GUEST", // Not logged in
-  USER = "USER", // Free tier
-  PRO = "PRO", // Paid tier
+  GUEST = "GUEST",
+  USER = "USER",
+  PRO = "PRO",
 }
 
 export const ROLE_HIERARCHY = {
@@ -10,12 +10,6 @@ export const ROLE_HIERARCHY = {
   [UserRole.PRO]: 2,
 };
 
-export function hasRole(
-  userRole: UserRole,
-  requiredRole: UserRole | UserRole[]
-): boolean {
-  const required = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-  return required.some(
-    (role) => ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[role]
-  );
+export function hasRole(userRole: UserRole, requiredRole: UserRole): boolean {
+  return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[requiredRole];
 }

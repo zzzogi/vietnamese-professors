@@ -1,26 +1,23 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { UserRole } from "@/lib/constants/roles";
+import { UserRole, hasRole } from "@/lib/constants/roles";
 
-export function useUserRole(): {
-  role: UserRole;
-  isLoading: boolean;
-  isPro: boolean;
-  isGuest: boolean;
-} {
+export function useUserRole() {
   const { data: session, status } = useSession();
 
-  const role = !session
-    ? UserRole.GUEST
-    : (session.user as any)?.isPro
-    ? UserRole.PRO
-    : UserRole.USER;
+  const role = session?.user?.role || UserRole.GUEST;
+  const isPro = session?.user?.isPro || false;
+  const isGuest = role === UserRole.GUEST;
+  const isUser = role === UserRole.USER;
 
   return {
     role,
+    isPro,
+    isGuest,
+    isUser,
     isLoading: status === "loading",
-    isPro: role === UserRole.PRO,
-    isGuest: role === UserRole.GUEST,
+    hasRole: (required: UserRole) => hasRole(role, required),
+    session,
   };
 }

@@ -1,92 +1,112 @@
 "use client";
 
-import { ReactNode } from "react";
-import { useUserRole } from "@/hooks/use-user-role";
+import { useSession } from "next-auth/react";
 import { UserRole, hasRole } from "@/lib/constants/roles";
-import { UpgradeModal } from "./upgrade-modal";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Lock, Crown, LogIn } from "lucide-react";
+import Link from "next/link";
+import { ReactNode } from "react";
 
 interface AccessGateProps {
-  /**
-   * Required role(s) to access the content
-   */
-  required: UserRole | UserRole[];
-
-  /**
-   * Content to show when user has access
-   */
+  required: UserRole;
   children: ReactNode;
-
-  /**
-   * Optional fallback to show when access is denied
-   * If not provided and showUpgradeModal is false, nothing is rendered
-   */
   fallback?: ReactNode;
-
-  /**
-   * Show upgrade modal when access is denied
-   */
-  showUpgradeModal?: boolean;
-
-  /**
-   * Feature name to display in upgrade modal
-   */
-  featureName?: string;
+  showUpgrade?: boolean;
 }
 
-/**
- * AccessGate - Conditionally render content based on user role
- *
- * @example
- * // Show content only to PRO users
- * <AccessGate required="PRO" showUpgradeModal featureName="Exclusive Professors">
- *   <ProProfessorList />
- * </AccessGate>
- *
- * @example
- * // Show content to USER or PRO, hide from GUEST
- * <AccessGate required={["USER", "PRO"]} fallback={<LoginPrompt />}>
- *   <GenerateEmailButton />
- * </AccessGate>
- */
 export function AccessGate({
   required,
   children,
   fallback,
-  showUpgradeModal = false,
-  featureName,
+  showUpgrade = true,
 }: AccessGateProps) {
-  const { role, isLoading } = useUserRole();
-  const [showModal, setShowModal] = useState(false);
+  const { data: session, status } = useSession();
 
-  // Show nothing while loading
-  if (isLoading) {
-    return null;
-  }
-
-  const hasAccess = hasRole(role, required);
-
-  // User has access - render children
-  if (hasAccess) {
-    return <>{children}</>;
-  }
-
-  // User doesn't have access
-  if (showUpgradeModal) {
+  // Loading state
+  if (status === "loading") {
     return (
-      <>
-        <div onClick={() => setShowModal(true)} className="cursor-pointer">
-          {fallback}
-        </div>
-        <UpgradeModal
-          isOpen={showModal}
-          onClose={() => setShowModal(false)}
-          feature={featureName}
-        />
-      </>
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+      </div>
     );
   }
 
-  // Just show fallback
-  return <>{fallback}</>;
+  const userRole = session?.user?.role || UserRole.GUEST;
+
+  // Check if user has required role
+  if (hasRole(userRole, required)) {
+    return <>{children}</>;
+  }
+
+  // Custom fallback
+  if (fallback) {
+    return <>{fallback}</>;
+  }
+
+  // Default fallback based on required role
+  if (required === UserRole.USER) {
+    return (
+      <Card className="p-8 text-center">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 flex items-center justify-center">
+          <LogIn className="w-8 h-8 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          Sign In Required
+        </h3>
+        <p className="text-gray-600 mb-6">
+          Please sign in to access this feature
+        </p>
+        <Link href="/login">
+          <Button className="bg-purple-600 hover:bg-purple-700">Sign In</Button>
+        </Link>
+      </Card>
+    );
+  }
+
+  if (required === UserRole.PRO) {
+    return (
+      <Card className="p-8 text-center">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+          <Crown className="w-8 h-8 text-purple-600" />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          PRO Feature
+        </h3>
+        <p className="text-gray-600 mb-6">
+          This feature is available for PRO members only
+        </p>
+        {showUpgrade && (
+          <div className="flex gap-3 justify-center">
+            <Link href="/pricing">
+              <Button className="bg-purple-600 hover:bg-purple-700">
+                <Crown className="w-4 h-4 mr-2" />
+                Upgrade to PRO
+              </Button>
+            </Link>
+            {userRole === UserRole.GUEST && (
+              <Link href="/login">
+                <Button variant="outline">Sign In</Button>
+              </Link>
+            )}
+          </div>
+        )}
+      </Card>
+    );
+  }
+
+  // Generic locked state
+  return (
+    <Card className="p-8 text-center">
+      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+        <Lock className="w-8 h-8 text-gray-600" />
+      </div>
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        Access Restricted
+      </h3>
+      <p className="text-gray-600">
+        You don't have permission to access this feature
+      </p>
+    </Card>
+  );
 }
