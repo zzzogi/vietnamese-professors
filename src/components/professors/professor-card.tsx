@@ -1,26 +1,35 @@
-"use client";
-
-import { Professor } from "@/hooks/use-professors";
+import { Professor } from "@prisma/client";
 import { Card } from "@/components/ui/card";
-import { Mail, MapPin, Building2, GraduationCap } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Mail, Crown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { RatingDisplay } from "./rating-display";
-import { useProfessorRating } from "@/hooks/use-rate-professor";
 
 interface ProfessorCardProps {
   professor: Professor;
+  showProBadge?: boolean;
 }
 
-export function ProfessorCard({ professor }: ProfessorCardProps) {
-  const { data: ratingData } = useProfessorRating(professor.id);
-
+export function ProfessorCard({
+  professor,
+  showProBadge = true,
+}: ProfessorCardProps) {
   return (
     <Link href={`/professors/${professor.id}`}>
-      <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
-        <div className="flex gap-4">
+      <Card className="p-6 hover:shadow-lg transition-all cursor-pointer h-full border border-gray-200 hover:border-purple-300">
+        {/* PRO Badge */}
+        {showProBadge && professor.isPro && (
+          <div className="mb-3">
+            <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white border-0">
+              <Crown className="w-3 h-3 mr-1" />
+              PRO
+            </Badge>
+          </div>
+        )}
+
+        <div className="flex items-start gap-4 mb-4">
           {/* Avatar */}
-          <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-gray-200">
+          <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
             {professor.imageUrl ? (
               <Image
                 src={professor.imageUrl}
@@ -37,44 +46,50 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-gray-900 truncate">
+            <h3 className="font-semibold text-gray-900 truncate mb-1">
               {professor.name}
             </h3>
-
-            {/* Rating */}
-            {ratingData && ratingData.totalRatings > 0 && (
-              <div className="mt-1">
-                <RatingDisplay
-                  rating={ratingData.averageRating}
-                  totalRatings={ratingData.totalRatings}
-                  size="sm"
-                />
-              </div>
-            )}
-
-            <div className="mt-2 space-y-1.5">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Building2 className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{professor.university}</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <GraduationCap className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{professor.major}</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{professor.location}</span>
-              </div>
+            <p className="text-sm text-gray-600 truncate mb-2">
+              {professor.university}
+            </p>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <MapPin className="w-3 h-3" />
+              <span className="truncate">{professor.location}</span>
             </div>
-
-            {professor.bio && (
-              <p className="mt-3 text-sm text-gray-500 line-clamp-2">
-                {professor.bio}
-              </p>
-            )}
           </div>
+        </div>
+
+        {/* Major */}
+        <div className="mb-3">
+          <Badge variant="secondary" className="text-xs">
+            {professor.major}
+          </Badge>
+        </div>
+
+        {/* Research Interests */}
+        {professor.researchInterests &&
+          professor.researchInterests.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {professor.researchInterests.slice(0, 2).map((interest, idx) => (
+                <span
+                  key={idx}
+                  className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
+                >
+                  {interest}
+                </span>
+              ))}
+              {professor.researchInterests.length > 2 && (
+                <span className="text-xs text-gray-500 px-2 py-1">
+                  +{professor.researchInterests.length - 2}
+                </span>
+              )}
+            </div>
+          )}
+
+        {/* Email */}
+        <div className="flex items-center gap-2 text-xs text-gray-500 pt-3 border-t border-gray-100">
+          <Mail className="w-3 h-3" />
+          <span className="truncate">{professor.email}</span>
         </div>
       </Card>
     </Link>
