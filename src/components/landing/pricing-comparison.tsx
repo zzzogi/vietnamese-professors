@@ -7,12 +7,12 @@ const plans = [
   {
     name: "Free",
     price: "$0",
-    description: "Perfect for trying out the platform",
+    description: "Perfect for getting started",
     features: [
       { text: "5 professor profiles", included: true },
       { text: "Basic search filters", included: true },
       { text: "Limited AI email preview", included: true },
-      { text: "View leaderboard (top 5)", included: true },
+      { text: "View top 5 leaderboard", included: true },
       { text: "PRO-only professors", included: false },
       { text: "Unlimited AI emails", included: false },
       { text: "Export CSV/PDF", included: false },
@@ -20,13 +20,13 @@ const plans = [
     ],
     cta: "Start Free",
     href: "/register",
-    popular: false,
+    highlighted: false,
   },
   {
     name: "PRO",
     price: "$9.99",
     period: "/month",
-    description: "For serious students and researchers",
+    description: "For serious researchers",
     features: [
       { text: "Unlimited professor profiles", included: true },
       { text: "Advanced search & filters", included: true },
@@ -39,14 +39,14 @@ const plans = [
     ],
     cta: "Coming Soon",
     href: "#",
-    popular: true,
+    highlighted: true,
   },
 ];
 
 export function PricingComparison() {
   return (
     <section className="py-20 bg-white">
-      <div className="container">
+      <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Simple, Transparent Pricing
@@ -61,13 +61,15 @@ export function PricingComparison() {
             <Card
               key={index}
               className={`p-8 relative ${
-                plan.popular ? "border-2 border-purple-600 shadow-xl" : "border"
+                plan.highlighted
+                  ? "border-2 border-purple-600 shadow-lg"
+                  : "border border-gray-200"
               }`}
             >
-              {plan.popular && (
+              {plan.highlighted && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <span className="bg-purple-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
+                    Popular
                   </span>
                 </div>
               )}
@@ -84,21 +86,25 @@ export function PricingComparison() {
                     <span className="text-gray-600">{plan.period}</span>
                   )}
                 </div>
-                <p className="text-gray-600">{plan.description}</p>
+                <p className="text-sm text-gray-600">{plan.description}</p>
               </div>
 
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3">
                     {feature.included ? (
-                      <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-3 h-3 text-green-600" />
+                      </div>
                     ) : (
-                      <X className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                      <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <X className="w-3 h-3 text-gray-400" />
+                      </div>
                     )}
                     <span
-                      className={
+                      className={`text-sm ${
                         feature.included ? "text-gray-900" : "text-gray-400"
-                      }
+                      }`}
                     >
                       {feature.text}
                     </span>
@@ -109,7 +115,7 @@ export function PricingComparison() {
               <Link href={plan.href}>
                 <Button
                   className={`w-full ${
-                    plan.popular
+                    plan.highlighted
                       ? "bg-purple-600 hover:bg-purple-700"
                       : "bg-gray-900 hover:bg-gray-800"
                   }`}
