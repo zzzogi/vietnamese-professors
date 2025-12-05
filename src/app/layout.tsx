@@ -1,6 +1,16 @@
-import { Providers } from "./providers";
+// src/app/layout.tsx
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Vietnamese Professors",
+  description: "Find research supervisors in Vietnam",
+};
 
 export default function RootLayout({
   children,
@@ -9,10 +19,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={inter.className}>
         <Providers>
           {children}
-          <Toaster position="top-right" />
+          <Toaster />
         </Providers>
       </body>
     </html>
