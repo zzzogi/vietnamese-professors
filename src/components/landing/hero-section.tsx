@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export function HeroSection() {
+  const { data: session } = useSession();
+
   return (
     <section className="relative overflow-hidden bg-white py-20 md:py-32">
       {/* Subtle background pattern */}
@@ -30,29 +35,54 @@ export function HeroSection() {
             with AI, and track your academic connections.
           </p>
 
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-            <Link href="/signup">
-              <Button
-                size="lg"
-                className="bg-purple-600 hover:bg-purple-700 text-base px-8 h-12 min-w-[160px]"
-              >
-                Start Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/professors">
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-base px-8 h-12 min-w-[160px] border-gray-300"
-              >
-                Browse Professors
-              </Button>
-            </Link>
-          </div>
+          {/* CTAs - Show different buttons based on login status */}
+          {session ? (
+            // ✅ Logged in - show Dashboard & Browse
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+              <Link href="/dashboard">
+                <Button
+                  size="lg"
+                  className="bg-purple-600 hover:bg-purple-700 text-base px-8 h-12 min-w-[160px]"
+                >
+                  Go to Dashboard
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/professors">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-base px-8 h-12 min-w-[160px] border-gray-300"
+                >
+                  Browse Professors
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            // ✅ Not logged in - show Start Free & Browse
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+              <Link href="/register">
+                <Button
+                  size="lg"
+                  className="bg-purple-600 hover:bg-purple-700 text-base px-8 h-12 min-w-[160px]"
+                >
+                  Start Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/professors">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-base px-8 h-12 min-w-[160px] border-gray-300"
+                >
+                  Browse Professors
+                </Button>
+              </Link>
+            </div>
+          )}
 
-          {/* Benefits */}
+          {/* Benefits - Updated text */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
@@ -64,13 +94,13 @@ export function HeroSection() {
               <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
                 <Check className="h-3 w-3 text-green-600" />
               </div>
-              <span>5 free profiles</span>
+              <span>Search all professors</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
                 <Check className="h-3 w-3 text-green-600" />
               </div>
-              <span>AI-powered</span>
+              <span>AI-powered emails</span>
             </div>
           </div>
         </div>
